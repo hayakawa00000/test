@@ -1,106 +1,180 @@
-import { useState } from "react";
+"use client"
 
-const questions = [
-  {
-    question: "日本の首都はどこですか？",
-    options: ["大阪", "東京", "名古屋", "札幌"],
-    answer: 1,
-  },
-  {
-    question: "富士山の標高は？",
-    options: ["2,776m", "3,776m", "4,776m", "1,776m"],
-    answer: 1,
-  },
-  {
-    question: "日本の国鳥は？",
-    options: ["キジ", "ツル", "ハト", "スズメ"],
-    answer: 0,
-  },
-  {
-    question: "日本の一番長い川は？",
-    options: ["信濃川", "利根川", "木曽川", "天竜川"],
-    answer: 0,
-  },
-  {
-    question: "日本の一番大きい湖は？",
-    options: ["琵琶湖", "霞ヶ浦", "サロマ湖", "猪苗代湖"],
-    answer: 0,
-  },
-  {
-    question: "日本の一番高い山は？",
-    options: ["北岳", "富士山", "槍ヶ岳", "奥穂高岳"],
-    answer: 1,
-  },
-  {
-    question: "日本の通貨単位は？",
-    options: ["ドル", "ユーロ", "円", "ウォン"],
-    answer: 2,
-  },
-  {
-    question: "日本の最北端の都道府県は？",
-    options: ["北海道", "青森県", "秋田県", "岩手県"],
-    answer: 0,
-  },
-  {
-    question: "日本の国花は？",
-    options: ["桜", "梅", "菊", "椿"],
-    answer: 0,
-  },
-  {
-    question: "日本の総理大臣の任期は？",
-    options: ["2年", "4年", "6年", "決まっていない"],
-    answer: 3,
-  },
-];
+import { useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
 
-export default function Home() {
-  const [current, setCurrent] = useState(0);
-  const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
+interface Question {
+  id: number
+  question: string
+  options: string[]
+}
 
-  const handleAnswer = (idx) => {
-    if (idx === questions[current].answer) setScore(score + 1);
-    if (current + 1 < questions.length) {
-      setCurrent(current + 1);
-    } else {
-      setShowResult(true);
+const questions: Question[] = [
+  {
+    id: 1,
+    question: "現在お住まいの建物の築年数はどのくらいですか？",
+    options: ["10年未満", "10年〜20年", "20年〜30年", "30年以上"],
+  },
+  {
+    id: 2,
+    question: "リフォームを検討している箇所はどちらですか？",
+    options: ["キッチン", "バスルーム", "トイレ", "リビング", "外壁・屋根"],
+  },
+  {
+    id: 3,
+    question: "リフォームの予算はどのくらいを想定していますか？",
+    options: ["50万円未満", "50万円〜100万円", "100万円〜300万円", "300万円以上"],
+  },
+  {
+    id: 4,
+    question: "省エネ設備の導入を検討していますか？",
+    options: ["はい、積極的に検討している", "興味はある", "あまり興味がない", "わからない"],
+  },
+  {
+    id: 5,
+    question: "バリアフリー化は必要ですか？",
+    options: ["必要", "将来的に必要", "不要", "わからない"],
+  },
+  {
+    id: 6,
+    question: "現在の住宅の断熱性能に満足していますか？",
+    options: ["満足している", "やや不満", "不満", "わからない"],
+  },
+  {
+    id: 7,
+    question: "太陽光発電システムの設置を検討していますか？",
+    options: ["設置予定", "検討中", "興味なし", "すでに設置済み"],
+  },
+  {
+    id: 8,
+    question: "リフォーム工事の開始時期はいつ頃を予定していますか？",
+    options: ["3ヶ月以内", "6ヶ月以内", "1年以内", "未定"],
+  },
+  {
+    id: 9,
+    question: "過去に住宅関連の補助金を利用したことはありますか？",
+    options: ["ある", "ない", "わからない"],
+  },
+  {
+    id: 10,
+    question: "リフォーム後の住宅で最も重視したいことは何ですか？",
+    options: ["快適性", "省エネ性", "安全性", "デザイン性"],
+  },
+]
+
+export default function QuizApp() {
+  const [currentQuestion, setCurrentQuestion] = useState(0)
+  const [answers, setAnswers] = useState<Record<number, string>>({})
+  const [selectedAnswer, setSelectedAnswer] = useState<string>("")
+  const [isCompleted, setIsCompleted] = useState(false)
+
+  const handleNext = () => {
+    if (selectedAnswer) {
+      setAnswers((prev) => ({
+        ...prev,
+        [questions[currentQuestion].id]: selectedAnswer,
+      }))
+
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion((prev) => prev + 1)
+        setSelectedAnswer("")
+      } else {
+        setIsCompleted(true)
+      }
     }
-  };
+  }
+
+  const handlePrevious = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion((prev) => prev - 1)
+      setSelectedAnswer(answers[questions[currentQuestion - 1].id] || "")
+    }
+  }
+
+  const resetQuiz = () => {
+    setCurrentQuestion(0)
+    setAnswers({})
+    setSelectedAnswer("")
+    setIsCompleted(false)
+  }
+
+  const progressPercentage = ((currentQuestion + 1) / questions.length) * 100
+
+  if (isCompleted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-2xl">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold text-orange-600">診断完了！</CardTitle>
+            <p className="text-gray-600 mt-2">ご回答ありがとうございました。</p>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <p className="text-lg">あなたの回答を基に、最適なリフォーム補助金をご提案いたします。</p>
+            <div className="bg-orange-50 p-4 rounded-lg">
+              <p className="font-semibold text-orange-800">診断結果は後日メールにてお送りいたします。</p>
+            </div>
+            <Button onClick={resetQuiz} className="bg-orange-600 hover:bg-orange-700">
+              もう一度診断する
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   return (
-    <div style={{ maxWidth: 500, margin: "50px auto", fontFamily: "sans-serif" }}>
-      <h1>日本クイズ</h1>
-      {showResult ? (
-        <div>
-          <h2>結果</h2>
-          <p>
-            {score} / {questions.length} 問正解！
-          </p>
-        </div>
-      ) : (
-        <div>
-          <h2>
-            問{current + 1}: {questions[current].question}
-          </h2>
-          <ul style={{ listStyle: "none", padding: 0 }}>
-            {questions[current].options.map((opt, idx) => (
-              <li key={idx} style={{ margin: "8px 0" }}>
-                <button
-                  style={{
-                    width: "100%",
-                    padding: "10px",
-                    fontSize: "1em",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => handleAnswer(idx)}
-                >
-                  {opt}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-2xl">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold text-orange-600">リフォーム補助金診断</CardTitle>
+          <p className="text-orange-500 font-medium mt-2">第2期の申請締切まであと69日！</p>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          <div className="text-center">
+            <span className="text-lg font-semibold text-gray-700">{currentQuestion + 1}/10</span>
+          </div>
+
+          <Progress value={progressPercentage} className="w-full h-3" />
+
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold text-gray-800">{questions[currentQuestion].question}</h3>
+
+            <RadioGroup value={selectedAnswer} onValueChange={setSelectedAnswer} className="space-y-3">
+              {questions[currentQuestion].options.map((option, index) => (
+                <div key={index} className="flex items-center space-x-3">
+                  <RadioGroupItem value={option} id={`option-${index}`} className="text-orange-600" />
+                  <Label
+                    htmlFor={`option-${index}`}
+                    className="text-gray-700 cursor-pointer flex-1 p-3 rounded-lg hover:bg-orange-50 transition-colors"
+                  >
+                    {option}
+                  </Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </div>
+
+          <div className="flex justify-between pt-4">
+            <Button
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentQuestion === 0}
+              className="border-orange-300 text-orange-600 hover:bg-orange-50"
+            >
+              前へ
+            </Button>
+
+            <Button onClick={handleNext} disabled={!selectedAnswer} className="bg-orange-600 hover:bg-orange-700">
+              {currentQuestion === questions.length - 1 ? "診断完了" : "次へ"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
-  );
+  )
 }
