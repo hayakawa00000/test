@@ -1,0 +1,92 @@
+// pages/index.tsx
+"use client";
+import { useState } from "react";
+import { motion } from "framer-motion";
+
+const questions = [
+  { id: 1, type: "text", question: "あなたの名前は？" },
+  { id: 2, type: "choice", question: "性別を選んでください。", options: ["男性", "女性", "その他"] },
+  { id: 3, type: "text", question: "年齢を入力してください。" },
+  { id: 4, type: "choice", question: "お住まいの地域は？", options: ["関東", "関西", "中部", "九州", "その他"] },
+  { id: 5, type: "text", question: "現在の職業は？" },
+  { id: 6, type: "choice", question: "結婚されていますか？", options: ["はい", "いいえ"] },
+  { id: 7, type: "text", question: "趣味は何ですか？" },
+  { id: 8, type: "choice", question: "スマホの利用時間は？", options: ["1時間未満", "1〜3時間", "3〜5時間", "5時間以上"] },
+  { id: 9, type: "text", question: "最近ハマっていることは？" },
+  { id: 10, type: "choice", question: "このフォームの使いやすさは？", options: ["とても良い", "良い", "普通", "悪い"] },
+];
+
+export default function Home() {
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState<{ [key: number]: string }>({});
+
+  const handleAnswer = (value: string) => {
+    setAnswers({ ...answers, [questions[step].id]: value });
+    setStep(step + 1);
+  };
+
+  const current = questions[step];
+
+  return (
+    <main className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
+      <div className="bg-white p-6 rounded-2xl shadow-md w-full max-w-md">
+        {step < questions.length ? (
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <h2 className="text-xl font-bold mb-4">質問 {step + 1} / {questions.length}</h2>
+            <p className="mb-4">{current.question}</p>
+            {current.type === "choice" ? (
+              <div className="space-y-2">
+                {current.options!.map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => handleAnswer(option)}
+                    className="w-full px-4 py-2 rounded-xl bg-blue-500 text-white hover:bg-blue-600"
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const value = (e.currentTarget.elements[0] as HTMLInputElement).value;
+                  if (value.trim()) handleAnswer(value);
+                }}
+              >
+                <input
+                  type="text"
+                  className="w-full p-2 border rounded-xl mb-4"
+                  placeholder="入力してください"
+                />
+                <button
+                  type="submit"
+                  className="w-full px-4 py-2 rounded-xl bg-blue-500 text-white hover:bg-blue-600"
+                >
+                  次へ
+                </button>
+              </form>
+            )}
+          </motion.div>
+        ) : (
+          <div>
+            <h2 className="text-xl font-bold mb-4">ご回答ありがとうございました！</h2>
+            <ul className="text-sm text-gray-700 space-y-2">
+              {questions.map((q) => (
+                <li key={q.id}>
+                  <strong>{q.question}</strong><br />
+                  <span>{answers[q.id]}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}
